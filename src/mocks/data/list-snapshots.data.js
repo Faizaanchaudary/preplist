@@ -1,0 +1,40 @@
+export const listSnapshots = [
+  {
+    id: "snap-001",
+    listId: "l-003",
+    kitchenId: "k-001",
+    section: "Sauce",
+    snapshotDate: "2026-04-25T23:59:00.000Z",
+    title: "Sauce Batch Checklist",
+    carriedToActivity: true,
+    items: [
+      {
+        id: "si-001",
+        title: "Port tomato base",
+        checked: true,
+        status: "completed",
+        notes: "",
+        completedBy: "u-004",
+        completedAt: "2026-04-25T19:12:00.000Z",
+      },
+      {
+        id: "si-002",
+        title: "Label reduced demi",
+        checked: false,
+        status: "pending",
+        notes: "",
+        completedBy: null,
+        completedAt: null,
+      },
+      {
+        id: "si-003",
+        title: "Store basil oil",
+        checked: true,
+        status: "completed",
+        notes: "",
+        completedBy: "u-004",
+        completedAt: "2026-04-25T19:22:00.000Z",
+      },
+    ],
+  },
+];

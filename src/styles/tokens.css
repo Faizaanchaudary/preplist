@@ -1,0 +1,13 @@
+:root {
+  --app-bg: #f4f5f7;
+  --surface-soft: #f7f7f8;
+  --surface-strong: #16181d;
+  --text-primary: #101217;
+  --text-muted: #6a707c;
+  --stroke-soft: #e6e8ec;
+  --success-soft: #eaf8ef;
+  --success-strong: #1f7a39;
+  --warning-soft: #fff4e5;
+  --warning-strong: #9a6200;
+  --shadow-card: 0 12px 34px rgba(16, 18, 23, 0.06);
+}

@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Development baseline: any signed-in user can access data.
+    // Tighten per-collection rules before production (see docs/FIREBASE_BACKEND.md).
+    match /{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isSignedIn();
+    }
+
+    match /sessions/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
