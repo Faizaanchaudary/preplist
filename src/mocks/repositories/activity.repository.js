@@ -14,6 +14,15 @@ function requireActivityPermission(user) {
   }
 }
 
+function mapActivityLogRow(db, log) {
+  const actor = db.users.find((user) => user.id === log.actorId) ?? null;
+
+  return {
+    ...log,
+    actor: actor?.name ?? "Unknown",
+  };
+}
+
 export async function getActivityLogs(filters = {}) {
   const db = readDb();
   const currentUser = requireAuth(db);
@@ -21,7 +30,8 @@ export async function getActivityLogs(filters = {}) {
 
   const action = typeof filters?.action === "string" ? filters.action : "all";
   const logs = getVisibleActivityLogs(db, currentUser);
-  const rows = action === "all" ? logs : logs.filter((log) => log.action === action);
+  const filtered = action === "all" ? logs : logs.filter((log) => log.action === action);
+  const rows = filtered.map((log) => mapActivityLogRow(db, log));
 
   return { rows };
 }
