@@ -174,9 +174,11 @@ export default function PinLoginPage() {
             isPending={pinLoginMutation.isPending}
             errorMessage={errorMessage}
             onSubmit={handleSubmit}
-            onForgotPassword={() => {
-              window.alert("Forgot Password? Contact Admin");
-            }}
+            onForgotPassword={() =>
+              navigate(ROUTES.FORGOT_PASSWORD, {
+                state: { ...location.state, email },
+              })
+            }
           />
         </section>
       </main>

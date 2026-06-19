@@ -23,6 +23,9 @@ async function loadRepositories() {
     selectKitchen: (await import("../mocks/repositories/auth.repository.js"))
       .selectKitchen,
     joinByCode: (await import("../mocks/repositories/auth.repository.js")).joinByCode,
+    requestPasswordReset: (
+      await import("../mocks/repositories/auth.repository.js")
+    ).requestPasswordReset,
     getDashboardData: (await import("../mocks/repositories/dashboard.repository.js"))
       .getDashboardData,
     getKitchens: (await import("../mocks/repositories/kitchen.repository.js"))
@@ -143,6 +146,10 @@ export async function selectKitchen(...args) {
 
 export async function joinByCode(...args) {
   return (await getRepo()).joinByCode(...args);
+}
+
+export async function requestPasswordReset(...args) {
+  return (await getRepo()).requestPasswordReset(...args);
 }
 
 export async function getDashboardData(...args) {

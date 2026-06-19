@@ -4,6 +4,7 @@ import {
   login,
   logout,
   pinLogin,
+  requestPasswordReset,
   selectKitchen,
 } from "../../../api/dataSource";
 import useAuthStore from "../../../store/useAuthStore";
@@ -103,5 +104,11 @@ export function useLogoutMutation() {
       clearCurrentUser();
       await clearAuthSession(queryClient);
     },
+  });
+}
+
+export function useForgotPasswordMutation() {
+  return useMutation({
+    mutationFn: ({ email }) => requestPasswordReset({ email }),
   });
 }

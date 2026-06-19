@@ -14,6 +14,7 @@ import {
   KitchenManagementPage,
   LoginPage,
   PinLoginPage,
+  ForgotPasswordPage,
   SelectKitchenPage,
   SplashPage,
   ListDetailsPage,
@@ -39,6 +40,10 @@ const routeConfig = [
   {
     path: ROUTE_SEGMENTS.PIN_LOGIN,
     element: <PinLoginPage />,
+  },
+  {
+    path: ROUTE_SEGMENTS.FORGOT_PASSWORD,
+    element: <ForgotPasswordPage />,
   },
   {
     path: ROUTE_SEGMENTS.JOIN_BY_CODE,

@@ -1,4 +1,4 @@
-export { getCurrentSession, login, logout, pinLogin, selectKitchen, joinByCode } from "./auth.repository.js";
+export { getCurrentSession, login, logout, pinLogin, selectKitchen, joinByCode, requestPasswordReset } from "./auth.repository.js";
 export { getDashboardData } from "./dashboard.repository.js";
 export {
   getKitchens,

@@ -305,6 +305,20 @@ export async function logout() {
   return null;
 }
 
+export async function requestPasswordReset({ email }) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    throw createAppError(400, "Email is required.");
+  }
+
+  return {
+    message:
+      "If an account exists for this email, a password reset link has been sent.",
+    mockMode: true,
+  };
+}
+
 export async function joinByCode({ email, code }) {
   const normalizedCode = String(code ?? "").trim().toUpperCase();
   const normalizedEmail = normalizeEmail(email);

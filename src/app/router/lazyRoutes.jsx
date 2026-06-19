@@ -64,6 +64,10 @@ export const PinLoginPage = lazy(() =>
   import("../../features/auth/pages/PinLoginPage")
 );
 
+export const ForgotPasswordPage = lazy(() =>
+  import("../../features/auth/pages/ForgotPasswordPage")
+);
+
 export const SelectKitchenPage = lazy(() =>
   import("../../features/auth/pages/SelectKitchenPage")
 );

@@ -75,18 +75,16 @@ export default function LoginPage() {
   return (
     <AuthShell
       title="Sign in"
-      description="Mock-first auth. Any non-empty email is accepted and your role is derived from session data."
+      description="Sign in with your staff email and password."
       actions={
         <Link to={ROUTES.PIN_LOGIN} state={location.state}>
           <Button variant="secondary">Use PIN</Button>
         </Link>
       }
       footer={
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <p className="text-xs text-[var(--text-muted)]">
-            Role is derived from testing email prefixes.
-          </p>
-        </div>
+        <p className="text-xs text-[var(--text-muted)]">
+          Use a demo account below or your assigned staff email.
+        </p>
       }
     >
       <LoginForm
@@ -98,11 +96,11 @@ export default function LoginPage() {
             state: location.state,
           })
         }
-        onForgotPassword={() => {
-          window.alert(
-            "For password reset, contact admin. Mock reset flow can be added later."
-          );
-        }}
+        onForgotPassword={() =>
+          navigate(ROUTES.FORGOT_PASSWORD, {
+            state: location.state,
+          })
+        }
       />
     </AuthShell>
   );

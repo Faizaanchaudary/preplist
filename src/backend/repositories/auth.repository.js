@@ -1,8 +1,9 @@
 import {
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { auth } from "../config/firebase.js";
+import { auth, isFirebaseConfigured } from "../config/firebase.js";
 import { ROLES } from "../../shared/constants/roles";
 import { getUserPermissions } from "../../shared/utils/rbac";
 import { generateSequentialId } from "../../shared/utils/generateSequentialId";
@@ -351,6 +352,49 @@ export async function logout() {
     await signOut(auth);
   }
   return null;
+}
+
+const PASSWORD_RESET_SUCCESS_MESSAGE =
+  "If an account exists for this email, a password reset link has been sent.";
+
+function mapPasswordResetError(error) {
+  const code = String(error?.code ?? "");
+
+  if (code === "auth/invalid-email") {
+    return createAppError(400, "Please enter a valid email address.");
+  }
+
+  if (code === "auth/too-many-requests") {
+    return createAppError(429, "Too many attempts. Please try again later.");
+  }
+
+  return createAppError(
+    400,
+    "Unable to send the reset email right now. Please try again."
+  );
+}
+
+export async function requestPasswordReset({ email }) {
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedEmail) {
+    throw createAppError(400, "Email is required.");
+  }
+
+  if (!isFirebaseConfigured()) {
+    throw createAppError(
+      503,
+      "Password reset is unavailable because Firebase is not configured."
+    );
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, normalizedEmail);
+  } catch (error) {
+    throw mapPasswordResetError(error);
+  }
+
+  return { message: PASSWORD_RESET_SUCCESS_MESSAGE };
 }
 
 export async function joinByCode({ email, code }) {
