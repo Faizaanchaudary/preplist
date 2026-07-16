@@ -42,10 +42,17 @@ export {
 } from "./organization.repository.js";
 export {
   getActivityLogs,
+  completeActivityLog,
   getDailyHistory,
   getWeeklyHistory,
+  getMonthlyHistory,
   getCarryForwardSnapshots,
 } from "./activity.repository.js";
+export {
+  getRecipeCategories,
+  getTemplateCategories,
+  getActivityCategories,
+} from "./categories.repository.js";
 export {
   getSubscriptionPlans,
   getRestaurantSubscriptionUsage,

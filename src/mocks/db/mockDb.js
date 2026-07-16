@@ -14,11 +14,14 @@ import { subscriptionPlans } from "../data/subscription.data";
 import { recipes } from "../data/recipes.data";
 import { recipeDrafts } from "../data/recipe-drafts.data";
 import { companies } from "../data/companies.data";
+import { recipeCategories } from "../data/recipe-categories.data";
+import { templateCategories } from "../data/template-categories.data";
+import { activityCategories } from "../data/activity-categories.data";
 import { carryForwardList } from "../../shared/utils/carryForwardList";
 import { readJson, writeJson } from "./mockStorage";
 
 const DB_STORAGE_KEY = "vpl_mock_db_v1";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const MAX_CARRY_FORWARD_DAYS = 14;
 
 function deepClone(value) {
@@ -339,6 +342,10 @@ export function buildSeedDb() {
     subscriptionPlans: deepClone(subscriptionPlans),
     recipes: deepClone(recipes),
     recipeDrafts: deepClone(recipeDrafts),
+    // Category collections — hardcoded, seeded once
+    recipeCategories: deepClone(recipeCategories),
+    templateCategories: deepClone(templateCategories),
+    activityCategories: deepClone(activityCategories),
   };
 }
 

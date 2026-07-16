@@ -180,102 +180,110 @@ export async function updateChecklistItem(listId, itemId, payload) {
     const providedStatus =
       typeof payload?.status === "string" ? payload.status.trim() : null;
     const providedChecked = typeof payload?.checked === "boolean" ? payload.checked : null;
+    const providedRecipeId =
+      payload?.recipeId === null || typeof payload?.recipeId === "string" ? payload.recipeId : undefined;
 
-    if (providedStatus === null && providedChecked === null) {
+    if (providedStatus === null && providedChecked === null && providedRecipeId === undefined) {
       throw createAppError(400, "Nothing to update.");
     }
 
-    const nextStatus =
-      providedStatus !== null
-        ? providedStatus
-        : providedChecked
-          ? TASK_STATUSES.COMPLETED
-          : TASK_STATUSES.PENDING;
-
-    if (!Object.values(TASK_STATUSES).includes(nextStatus)) {
-      throw createAppError(400, "Status is invalid.");
+    if (providedRecipeId !== undefined) {
+      item.recipeId = providedRecipeId || null;
     }
 
-    const nextChecked =
-      providedStatus !== null
-        ? nextStatus === TASK_STATUSES.COMPLETED
-        : Boolean(providedChecked);
+    if (providedStatus !== null || providedChecked !== null) {
+      const nextStatus =
+        providedStatus !== null
+          ? providedStatus
+          : providedChecked
+            ? TASK_STATUSES.COMPLETED
+            : TASK_STATUSES.PENDING;
 
-    const checkedChanged = item.checked !== nextChecked;
-    const statusChanged = item.status !== nextStatus;
-    const wasCompleted = item.status === TASK_STATUSES.COMPLETED;
-    const isCompletingNow = nextStatus === TASK_STATUSES.COMPLETED && !wasCompleted;
-    const isUncompletingNow = nextStatus !== TASK_STATUSES.COMPLETED && wasCompleted;
+      if (!Object.values(TASK_STATUSES).includes(nextStatus)) {
+        throw createAppError(400, "Status is invalid.");
+      }
 
-    item.checked = nextChecked;
-    item.status = nextStatus;
+      const nextChecked =
+        providedStatus !== null
+          ? nextStatus === TASK_STATUSES.COMPLETED
+          : Boolean(providedChecked);
 
-    if (nextStatus === TASK_STATUSES.COMPLETED) {
-      if (isCompletingNow || !item.completedAt) {
-        item.completedAt = now;
-        item.completedBy = currentUser.id;
+      const checkedChanged = item.checked !== nextChecked;
+      const statusChanged = item.status !== nextStatus;
+      const wasCompleted = item.status === TASK_STATUSES.COMPLETED;
+      const isCompletingNow = nextStatus === TASK_STATUSES.COMPLETED && !wasCompleted;
+      const isUncompletingNow = nextStatus !== TASK_STATUSES.COMPLETED && wasCompleted;
 
-        const existingCompletion = db.completions.find(
+      item.checked = nextChecked;
+      item.status = nextStatus;
+
+      if (nextStatus === TASK_STATUSES.COMPLETED) {
+        if (isCompletingNow || !item.completedAt) {
+          item.completedAt = now;
+          item.completedBy = currentUser.id;
+
+          const existingCompletion = db.completions.find(
+            (entry) => entry.checklistItemId === item.id
+          );
+
+          if (existingCompletion) {
+            existingCompletion.completedAt = now;
+            existingCompletion.userId = currentUser.id;
+          } else {
+            db.completions.unshift({
+              id: generateSequentialId("cmp", db.completions),
+              checklistItemId: item.id,
+              userId: currentUser.id,
+              completedAt: now,
+            });
+          }
+        }
+      } else {
+        item.completedAt = null;
+        item.completedBy = null;
+
+        const completionIndex = db.completions.findIndex(
           (entry) => entry.checklistItemId === item.id
         );
 
-        if (existingCompletion) {
-          existingCompletion.completedAt = now;
-          existingCompletion.userId = currentUser.id;
-        } else {
-          db.completions.unshift({
-            id: generateSequentialId("cmp", db.completions),
-            checklistItemId: item.id,
-            userId: currentUser.id,
-            completedAt: now,
-          });
+        if (completionIndex !== -1) {
+          db.completions.splice(completionIndex, 1);
         }
       }
-    } else {
-      item.completedAt = null;
-      item.completedBy = null;
 
-      const completionIndex = db.completions.findIndex(
-        (entry) => entry.checklistItemId === item.id
-      );
-
-      if (completionIndex !== -1) {
-        db.completions.splice(completionIndex, 1);
+      if (checkedChanged) {
+        appendActivityLog(db, {
+          list,
+          actor: currentUser,
+          action: nextChecked ? "checked_item" : "unchecked_item",
+          message: `${currentUser.name} ${nextChecked ? "checked" : "unchecked"} ${item.title}`,
+        });
       }
-    }
 
-    if (checkedChanged) {
-      appendActivityLog(db, {
-        list,
-        actor: currentUser,
-        action: nextChecked ? "checked_item" : "unchecked_item",
-        message: `${currentUser.name} ${nextChecked ? "checked" : "unchecked"} ${item.title}`,
-      });
-    }
+      if (statusChanged) {
+        appendActivityLog(db, {
+          list,
+          actor: currentUser,
+          action: "status_changed",
+          message: `${currentUser.name} moved ${item.title} to ${TASK_STATUS_LABELS[nextStatus]}`,
+        });
+      }
 
-    if (statusChanged) {
-      appendActivityLog(db, {
-        list,
-        actor: currentUser,
-        action: "status_changed",
-        message: `${currentUser.name} moved ${item.title} to ${TASK_STATUS_LABELS[nextStatus]}`,
-      });
-    }
+      if (isCompletingNow) {
+        appendActivityLog(db, {
+          list,
+          actor: currentUser,
+          action: "completed_item",
+          message: `${currentUser.name} completed ${item.title}`,
+        });
+      }
 
-    if (isCompletingNow) {
-      appendActivityLog(db, {
-        list,
-        actor: currentUser,
-        action: "completed_item",
-        message: `${currentUser.name} completed ${item.title}`,
-      });
-    }
+      if (isUncompletingNow) {
+        const photoIndex = db.photos.findIndex((entry) => entry.checklistItemId === item.id);
 
-    if (isUncompletingNow) {
-      const photoIndex = db.photos.findIndex((entry) => entry.checklistItemId === item.id);
-
-      if (photoIndex !== -1) {
-        db.photos.splice(photoIndex, 1);
+        if (photoIndex !== -1) {
+          db.photos.splice(photoIndex, 1);
+        }
       }
     }
 
@@ -367,15 +375,16 @@ export async function attachChecklistItemPhoto(listId, itemId, payload) {
 
 export async function createTemplate(payload) {
   const title = typeof payload?.title === "string" ? payload.title.trim() : "";
-  const section = typeof payload?.section === "string" ? payload.section.trim() : "";
+  const categoryId = typeof payload?.categoryId === "string" ? payload.categoryId.trim() : "";
+  const category = typeof payload?.category === "string" ? payload.category.trim() : "";
   const itemCount = Number(payload?.itemCount);
 
   if (!title || title.length < 2) {
     throw createAppError(400, "Template title is required.");
   }
 
-  if (!section) {
-    throw createAppError(400, "Template section is required.");
+  if (!categoryId && !category) {
+    throw createAppError(400, "Template category is required.");
   }
 
   if (!Number.isFinite(itemCount) || itemCount < 1 || itemCount > 50) {
@@ -386,10 +395,14 @@ export async function createTemplate(payload) {
     const currentUser = requireAuth(db);
     requirePermission(currentUser, PERMISSIONS.MANAGE_LISTS);
 
+    const categoryDoc = (db.templateCategories ?? []).find((c) => c.id === categoryId);
+    const resolvedCategory = categoryDoc?.name ?? category ?? "General";
+
     const template = {
       id: generateSequentialId("t", db.templates),
       title,
-      section,
+      categoryId: categoryId || null,
+      category: resolvedCategory,
       itemCount: Math.trunc(itemCount),
     };
 

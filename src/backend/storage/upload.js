@@ -36,3 +36,29 @@ export async function uploadChecklistPhoto({
 
   return { storagePath: path, url };
 }
+
+export async function uploadRecipePhoto({
+  file,
+  fileName,
+}) {
+  if (!isFirebaseConfigured()) {
+    throw createAppError(503, "Firebase Storage is not configured.");
+  }
+
+  if (!file) {
+    throw createAppError(400, "Photo file is required.");
+  }
+
+  const safeName =
+    typeof fileName === "string" && fileName.trim()
+      ? fileName.trim()
+      : `recipe-${Date.now()}.jpg`;
+
+  const path = `recipes/${safeName}`;
+
+  const storageRef = ref(getStorageInstance(), path);
+  await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(storageRef);
+
+  return { storagePath: path, url };
+}

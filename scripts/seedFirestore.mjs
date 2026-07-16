@@ -43,6 +43,10 @@ const DB_COLLECTION_KEYS = [
   "subscriptionPlans",
   "recipes",
   "recipeDrafts",
+  // Category collections — separate per domain as per architecture decision
+  "recipeCategories",
+  "templateCategories",
+  "activityCategories",
 ];
 
 const DEFAULT_PASSWORD = process.env.SEED_USER_PASSWORD || "PrepList123!";

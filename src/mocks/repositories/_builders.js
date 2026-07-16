@@ -75,6 +75,68 @@ export function buildDashboardPayload(db, currentUser) {
   const visibleLogs = getVisibleActivityLogs(db, currentUser);
   const activeStaff = buildStaffVisibilityRows(db, visibleKitchens);
 
+  const kitchens = visibleKitchens.map((kitchen) => {
+    const kitchenItems = visibleItems.filter((item) => item.kitchenId === kitchen.id);
+    const totalItems = kitchenItems.length;
+    const completedItems = kitchenItems.filter(
+      (item) => item.status === TASK_STATUSES.COMPLETED
+    );
+    const completionPercentage = totalItems
+      ? Math.round((completedItems.length / totalItems) * 100)
+      : 0;
+
+    let totalDurationMs = 0;
+    let completedWithTimeCount = 0;
+
+    completedItems.forEach((item) => {
+      const list = visibleLists.find((l) => l.id === item.listId);
+      if (list?.createdAt && item.completedAt) {
+        const duration = new Date(item.completedAt).getTime() - new Date(list.createdAt).getTime();
+        if (duration > 0) {
+          totalDurationMs += duration;
+          completedWithTimeCount++;
+        }
+      }
+    });
+
+    const avgDurationMs = completedWithTimeCount
+      ? totalDurationMs / completedWithTimeCount
+      : null;
+
+    let averageCompletionTimeText = "No completions";
+    if (avgDurationMs !== null) {
+      const mins = Math.round(avgDurationMs / 60000);
+      if (mins < 60) {
+        averageCompletionTimeText = `${mins} mins`;
+      } else {
+        const hours = (mins / 60).toFixed(1);
+        averageCompletionTimeText = `${hours} hours`;
+      }
+    }
+
+    return {
+      ...kitchen,
+      memberCount: db.kitchenMemberships.filter(
+        (membership) => membership.kitchenId === kitchen.id
+      ).length,
+      activeListCount: visibleLists.filter((list) => list.kitchenId === kitchen.id)
+        .length,
+      completionPercentage,
+      averageCompletionDurationMs: avgDurationMs,
+      averageCompletionTimeText,
+    };
+  });
+
+  // Identify fastest kitchen
+  const kitchensWithSpeed = kitchens.filter(
+    (k) => k.averageCompletionDurationMs !== null && k.averageCompletionDurationMs > 0
+  );
+  const fastestKitchen = kitchensWithSpeed.length
+    ? kitchensWithSpeed.reduce((prev, curr) =>
+        prev.averageCompletionDurationMs < curr.averageCompletionDurationMs ? prev : curr
+      )
+    : null;
+
   return {
     currentUser,
     stats: deriveDashboardStats({
@@ -85,16 +147,15 @@ export function buildDashboardPayload(db, currentUser) {
         visibleKitchens.some((kitchen) => kitchen.id === membership.kitchenId)
       ),
     }),
-    kitchens: visibleKitchens.map((kitchen) => ({
-      ...kitchen,
-      memberCount: db.kitchenMemberships.filter(
-        (membership) => membership.kitchenId === kitchen.id
-      ).length,
-      activeListCount: visibleLists.filter((list) => list.kitchenId === kitchen.id)
-        .length,
-    })),
+    kitchens,
+    fastestKitchen: fastestKitchen
+      ? { id: fastestKitchen.id, name: fastestKitchen.name, avgTime: fastestKitchen.averageCompletionTimeText }
+      : null,
     activeStaff,
-    recentActivity: visibleLogs.slice(0, 5),
+    recentActivity: visibleLogs
+      .slice()
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5),
   };
 }
 

@@ -75,13 +75,6 @@ export const NAV_ITEMS = [
     ],
   },
   {
-    key: "subscription",
-    label: "Subscription",
-    href: ROUTES.SUBSCRIPTION,
-    icon: CreditCard,
-    requiredPermissions: [PERMISSIONS.VIEW_SUBSCRIPTION],
-  },
-  {
     key: "admin",
     label: "Admin",
     href: ROUTES.ADMIN,

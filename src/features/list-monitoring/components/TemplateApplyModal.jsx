@@ -115,7 +115,7 @@ export default function TemplateApplyModal({
               Template
             </p>
             <p className="mt-2 text-sm font-medium text-[var(--text-primary)]">
-              {template.title} · {template.section} · {template.itemCount} items
+              {template.title} · {template.category} · {template.itemCount} items
             </p>
           </div>
 

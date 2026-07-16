@@ -14,6 +14,9 @@ import { completions } from "../../src/mocks/data/completions.data.js";
 import { subscriptionPlans } from "../../src/mocks/data/subscription.data.js";
 import { recipes } from "../../src/mocks/data/recipes.data.js";
 import { recipeDrafts } from "../../src/mocks/data/recipe-drafts.data.js";
+import { recipeCategories } from "../../src/mocks/data/recipe-categories.data.js";
+import { templateCategories } from "../../src/mocks/data/template-categories.data.js";
+import { activityCategories } from "../../src/mocks/data/activity-categories.data.js";
 
 function deepClone(value) {
   return structuredClone(value);
@@ -23,7 +26,7 @@ export function buildSeedDb() {
   const seededAt = new Date().toISOString();
 
   return {
-    version: 4,
+    version: 5,
     meta: {
       seededAt,
       lastCarryForwardRunAt: null,
@@ -44,5 +47,9 @@ export function buildSeedDb() {
     subscriptionPlans: deepClone(subscriptionPlans),
     recipes: deepClone(recipes),
     recipeDrafts: deepClone(recipeDrafts),
+    // Category collections — hardcoded, seeded once
+    recipeCategories: deepClone(recipeCategories),
+    templateCategories: deepClone(templateCategories),
+    activityCategories: deepClone(activityCategories),
   };
 }

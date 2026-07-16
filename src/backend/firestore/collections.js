@@ -1,3 +1,9 @@
+/**
+ * Firestore collection name constants.
+ *
+ * Always use these constants in repositories — never use raw strings.
+ * This makes renaming a collection a single-file change.
+ */
 export const COLLECTIONS = {
   COMPANIES: "companies",
   KITCHENS: "kitchens",
@@ -16,6 +22,12 @@ export const COLLECTIONS = {
   RECIPES: "recipes",
   RECIPE_DRAFTS: "recipeDrafts",
   SESSIONS: "sessions",
+
+  // Category collections — each domain has its own collection so they
+  // can evolve independently without cross-domain coupling.
+  RECIPE_CATEGORIES: "recipeCategories",
+  TEMPLATE_CATEGORIES: "templateCategories",
+  ACTIVITY_CATEGORIES: "activityCategories",
 };
 
 export const DB_COLLECTION_KEYS = [
@@ -35,6 +47,10 @@ export const DB_COLLECTION_KEYS = [
   "subscriptionPlans",
   "recipes",
   "recipeDrafts",
+  // Category collections
+  "recipeCategories",
+  "templateCategories",
+  "activityCategories",
 ];
 
 export const COLLECTION_KEY_MAP = {
@@ -54,4 +70,7 @@ export const COLLECTION_KEY_MAP = {
   subscriptionPlans: COLLECTIONS.SUBSCRIPTION_PLANS,
   recipes: COLLECTIONS.RECIPES,
   recipeDrafts: COLLECTIONS.RECIPE_DRAFTS,
+  recipeCategories: COLLECTIONS.RECIPE_CATEGORIES,
+  templateCategories: COLLECTIONS.TEMPLATE_CATEGORIES,
+  activityCategories: COLLECTIONS.ACTIVITY_CATEGORIES,
 };

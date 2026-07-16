@@ -10,6 +10,16 @@ export default function RecipeCard({
 }) {
   return (
     <Card className="p-5 sm:p-6">
+      {recipe.imageUrl ? (
+        <div className="mb-4 h-36 w-full rounded-[18px] overflow-hidden border border-[var(--stroke-soft)] bg-[var(--surface-soft)]">
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-lg font-semibold text-[var(--text-primary)]">

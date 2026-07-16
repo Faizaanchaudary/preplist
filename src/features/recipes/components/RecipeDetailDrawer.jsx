@@ -41,6 +41,16 @@ export default function RecipeDetailDrawer({
 
       {!isLoading && !isError && data?.recipe ? (
         <div className="space-y-5">
+          {data.recipe.imageUrl ? (
+            <div className="relative h-48 w-full rounded-[18px] overflow-hidden border border-[var(--stroke-soft)] bg-[var(--surface-soft)]">
+              <img
+                src={data.recipe.imageUrl}
+                alt={data.recipe.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="text-xl font-semibold text-[var(--text-primary)]">

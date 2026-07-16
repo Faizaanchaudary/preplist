@@ -11,6 +11,7 @@ import {
 } from "../../../shared/constants/taskStatuses";
 import { useUpdateChecklistItemMutation } from "../api/useListMonitoringMutations";
 import RecipeLinkButton from "../../recipes/components/RecipeLinkButton";
+import { useRecipesQuery } from "../../recipes/api/useRecipesQuery";
 import useAuthStore from "../../../store/useAuthStore";
 
 const STATUS_OPTIONS = [
@@ -36,6 +37,7 @@ export default function ChecklistItemRow({
 }) {
   const checkboxId = useMemo(() => `checklist-item-${item.id}`, [item.id]);
   const updateMutation = useUpdateChecklistItemMutation();
+  const { data: recipesData } = useRecipesQuery();
   const canOperate = useAuthStore((state) =>
     state.hasPermission(PERMISSIONS.OPERATE_LISTS)
   );
@@ -102,7 +104,33 @@ export default function ChecklistItemRow({
           </span>
         ) : null}
 
-        {item.recipeId ? (
+        {canOperate ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-[var(--text-muted)]">Link Recipe:</span>
+            <select
+              value={item.recipeId || ""}
+              onChange={(event) => {
+                updateMutation.mutate({
+                  listId: item.listId,
+                  itemId: item.id,
+                  recipeId: event.target.value || null,
+                });
+              }}
+              disabled={isDisabled}
+              className="h-8 rounded-[12px] border border-[var(--stroke-soft)] bg-white px-2 py-0 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--surface-strong)] w-[160px]"
+            >
+              <option value="">None</option>
+              {(recipesData?.recipes ?? []).map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
+              ))}
+            </select>
+            {item.recipeId ? (
+              <RecipeLinkButton recipeId={item.recipeId} className="px-3 py-2" />
+            ) : null}
+          </div>
+        ) : item.recipeId ? (
           <RecipeLinkButton recipeId={item.recipeId} className="px-3 py-2" />
         ) : null}
 

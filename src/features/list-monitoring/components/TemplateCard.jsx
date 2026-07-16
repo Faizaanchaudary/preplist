@@ -13,7 +13,7 @@ export default function TemplateCard({ template, onApply }) {
               {template.title}
             </h3>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              Section: {template.section}
+              Category: {template.category}
             </p>
           </div>
 

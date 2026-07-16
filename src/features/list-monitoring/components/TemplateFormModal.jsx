@@ -2,23 +2,31 @@ import { useMemo, useState } from "react";
 import Button from "../../../shared/ui/Button";
 import Input from "../../../shared/ui/Input";
 import Modal from "../../../shared/ui/Modal";
+import Select from "../../../shared/ui/Select";
 import { useCreateTemplateMutation } from "../api/useListMonitoringMutations";
+import { useTemplateCategoriesQuery } from "../api/useTemplateCategoriesQuery";
 
 export default function TemplateFormModal({
   open,
   onClose,
 }) {
   const createTemplateMutation = useCreateTemplateMutation();
+  const { data: categoriesData } = useTemplateCategoriesQuery();
 
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [title, setTitle] = useState("");
-  const [section, setSection] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [itemCount, setItemCount] = useState("6");
+
+  const categoryOptions = [
+    { value: "", label: "Select category" },
+    ...(categoriesData?.rows ?? []).map((c) => ({ value: c.id, label: c.name })),
+  ];
 
   function resetForm() {
     setHasSubmitted(false);
     setTitle("");
-    setSection("");
+    setCategoryId("");
     setItemCount("6");
     createTemplateMutation.reset();
   }
@@ -35,13 +43,13 @@ export default function TemplateFormModal({
     return {
       title:
         title.trim().length >= 2 ? "" : "Template title must be at least 2 characters.",
-      section: section.trim() ? "" : "Template section is required.",
+      categoryId: categoryId.trim() ? "" : "Template category is required.",
       itemCount:
         Number.isFinite(parsedItemCount) && parsedItemCount >= 1 && parsedItemCount <= 50
           ? ""
           : "Item count must be between 1 and 50.",
     };
-  }, [title, section, itemCount]);
+  }, [title, categoryId, itemCount]);
 
   const hasErrors = Object.values(validation).some(Boolean);
 
@@ -51,10 +59,15 @@ export default function TemplateFormModal({
 
     if (hasErrors || createTemplateMutation.isPending) return;
 
+    const selectedCategory = (categoriesData?.rows ?? []).find(
+      (c) => c.id === categoryId
+    );
+
     try {
       await createTemplateMutation.mutateAsync({
         title: title.trim(),
-        section: section.trim(),
+        categoryId: categoryId,
+        category: selectedCategory?.name ?? "General",
         itemCount: Math.trunc(Number(itemCount)),
       });
 
@@ -90,16 +103,16 @@ export default function TemplateFormModal({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-[var(--text-primary)]">
-              Section
+              Category
             </label>
-            <Input
-              value={section}
-              onChange={(event) => setSection(event.target.value)}
-              placeholder="Prep"
-              autoComplete="off"
+            <Select
+              name="categoryId"
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
+              options={categoryOptions}
             />
-            {hasSubmitted && validation.section ? (
-              <p className="text-sm text-red-600">{validation.section}</p>
+            {hasSubmitted && validation.categoryId ? (
+              <p className="text-sm text-red-600">{validation.categoryId}</p>
             ) : null}
           </div>
 

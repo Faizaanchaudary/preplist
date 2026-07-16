@@ -85,13 +85,23 @@ async function loadRepositories() {
     ).getOrganizationUsers,
     getActivityLogs: (await import("../mocks/repositories/activity.repository.js"))
       .getActivityLogs,
+    completeActivityLog: (await import("../mocks/repositories/activity.repository.js"))
+      .completeActivityLog,
     getDailyHistory: (await import("../mocks/repositories/activity.repository.js"))
       .getDailyHistory,
     getWeeklyHistory: (await import("../mocks/repositories/activity.repository.js"))
       .getWeeklyHistory,
+    getMonthlyHistory: (await import("../mocks/repositories/activity.repository.js"))
+      .getMonthlyHistory,
     getCarryForwardSnapshots: (
       await import("../mocks/repositories/activity.repository.js")
     ).getCarryForwardSnapshots,
+    getRecipeCategories: (await import("../mocks/repositories/categories.repository.js"))
+      .getRecipeCategories,
+    getTemplateCategories: (await import("../mocks/repositories/categories.repository.js"))
+      .getTemplateCategories,
+    getActivityCategories: (await import("../mocks/repositories/categories.repository.js"))
+      .getActivityCategories,
     getSubscriptionPlans: (
       await import("../mocks/repositories/subscription.repository.js")
     ).getSubscriptionPlans,
@@ -280,6 +290,10 @@ export async function getActivityLogs(...args) {
   return (await getRepo()).getActivityLogs(...args);
 }
 
+export async function completeActivityLog(...args) {
+  return (await getRepo()).completeActivityLog(...args);
+}
+
 export async function getDailyHistory(...args) {
   return (await getRepo()).getDailyHistory(...args);
 }
@@ -288,8 +302,24 @@ export async function getWeeklyHistory(...args) {
   return (await getRepo()).getWeeklyHistory(...args);
 }
 
+export async function getMonthlyHistory(...args) {
+  return (await getRepo()).getMonthlyHistory(...args);
+}
+
 export async function getCarryForwardSnapshots(...args) {
   return (await getRepo()).getCarryForwardSnapshots(...args);
+}
+
+export async function getRecipeCategories(...args) {
+  return (await getRepo()).getRecipeCategories(...args);
+}
+
+export async function getTemplateCategories(...args) {
+  return (await getRepo()).getTemplateCategories(...args);
+}
+
+export async function getActivityCategories(...args) {
+  return (await getRepo()).getActivityCategories(...args);
 }
 
 export async function getSubscriptionPlans(...args) {

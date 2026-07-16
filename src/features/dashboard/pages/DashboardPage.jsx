@@ -78,19 +78,29 @@ export default function DashboardPage() {
   }
 
   const kitchens = Array.isArray(data.kitchens) ? data.kitchens : [];
+  const fastestKitchen = data.fastestKitchen ?? null;
   const activeStaff = Array.isArray(data.activeStaff) ? data.activeStaff : [];
   const recentActivity = Array.isArray(data.recentActivity)
     ? data.recentActivity
     : [];
+
+  const isExecutive = [
+    ROLES.SUPER_ADMIN,
+    ROLES.FOUNDER,
+    ROLES.EXECUTIVE_CHEF,
+  ].includes(currentUser?.role);
+
+  // Keep displayedStats to just the original stats array so it stays exactly 4 cards
+  const displayedStats = [...stats];
 
   return (
     <FeaturePageShell
       title="Dashboard"
       description="Live kitchen visibility, role-aware scope, and quick insight into lists, members, and completion progress."
     >
-      {stats.length ? (
+      {displayedStats.length ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((stat) => (
+          {displayedStats.map((stat) => (
             <StatCard key={stat.label} {...stat} />
           ))}
         </div>
@@ -115,6 +125,19 @@ export default function DashboardPage() {
             <Badge>{kitchens.length} kitchens</Badge>
           </div>
 
+          {isExecutive && fastestKitchen ? (
+            <div className="mt-4 rounded-[18px] border border-blue-100 bg-blue-50/50 p-4 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700">Operational Leader</p>
+                <p className="mt-0.5 text-sm font-bold text-blue-900">{fastestKitchen.name}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[11px] font-semibold text-blue-700">Avg completion time</p>
+                <p className="text-sm font-bold text-blue-900">{fastestKitchen.avgTime}</p>
+              </div>
+            </div>
+          ) : null}
+
           <div className="mt-5">
             {kitchens.length ? (
               <div className="grid gap-4">
@@ -132,10 +155,32 @@ export default function DashboardPage() {
                           {kitchen.city} · {kitchen.siteCode}
                         </p>
                       </div>
-                      <Badge variant="dark">
-                        {kitchen.activeListCount} active lists
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        {isExecutive ? (
+                          <span className="text-xs text-[var(--text-muted)] font-medium">
+                            Avg: {kitchen.averageCompletionTimeText}
+                          </span>
+                        ) : null}
+                        <Badge variant="dark">
+                          {kitchen.activeListCount} active lists
+                        </Badge>
+                      </div>
                     </div>
+
+                    {isExecutive ? (
+                      <div className="mt-4 border-t border-[var(--stroke-soft)] pt-3">
+                        <div className="flex items-center justify-between text-xs text-[var(--text-muted)] mb-1.5 font-medium">
+                          <span>Completion progress</span>
+                          <span>{kitchen.completionPercentage}%</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-[var(--stroke-soft)] overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                            style={{ width: `${kitchen.completionPercentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

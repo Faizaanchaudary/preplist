@@ -29,7 +29,7 @@ export default function ChecklistGroup({
         </span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
         {items.map((item) => {
           const photo = getPhotoForItem(item.id);
 

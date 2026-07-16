@@ -15,7 +15,7 @@ import {
 import { documentToEntity, toFirestoreValue } from "../firestore/timestamps.js";
 import { createAppError } from "../core/errors.js";
 
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const MAX_CARRY_FORWARD_DAYS = 14;
 
 function deepClone(value) {
@@ -72,8 +72,13 @@ function createEmptyDb() {
     subscriptionPlans: [],
     recipes: [],
     recipeDrafts: [],
+    // Category collections — seeded via seedCategories.mjs
+    recipeCategories: [],
+    templateCategories: [],
+    activityCategories: [],
   };
 }
+
 
 function ensureCarryForwardSnapshots(dbState, now = new Date()) {
   const todayStart = startOfDay(now);

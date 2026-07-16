@@ -10,19 +10,96 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Development baseline: any signed-in user can access data.
-    // Tighten per-collection rules before production (see docs/FIREBASE_BACKEND.md).
-    match /{document=**} {
-      allow read, write: if isSignedIn();
-    }
-
+    // --- Core Authentication and Sessions ---
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(userId) || isSignedIn();
+      allow write: if isOwner(userId);
     }
 
     match /sessions/{userId} {
       allow read, write: if isOwner(userId);
+    }
+
+    // --- Organization and Kitchens ---
+    match /companies/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /kitchens/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /kitchenSections/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /kitchenMemberships/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /accessCodes/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // --- Lists and Tasks ---
+    match /lists/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /checklistItems/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /templates/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /completions/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /photos/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /listSnapshots/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // --- Recipes ---
+    match /recipes/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /recipeDrafts/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // --- Activities and History ---
+    match /activityLogs/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // --- Subscription (Read-only) ---
+    match /subscriptionPlans/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // --- Seeded Category Collections (Read-only for users) ---
+    match /recipeCategories/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /templateCategories/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /activityCategories/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }

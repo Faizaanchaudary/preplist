@@ -10,6 +10,8 @@ import {
   useSubmitRecipeDraftMutation,
   useUpdateRecipeMutation,
 } from "../api/useRecipeMutations";
+import { useRecipeCategoriesQuery } from "../api/useRecipeCategoriesQuery";
+import { uploadRecipePhotoFile } from "../../../api/recipePhotoUpload";
 
 function getLinesFromText(value) {
   return String(value)
@@ -25,7 +27,10 @@ function getInitialValues({ recipe, draft, kitchenOptions = [] }) {
   return {
     title: source?.title ?? "",
     section: source?.section ?? "",
+    categoryId: source?.categoryId ?? "",
     category: source?.category ?? "",
+    imageUrl: source?.imageUrl ?? "",
+    scalingMultiplier: source?.scalingMultiplier ? String(source.scalingMultiplier) : "1",
     prepTimeMinutes:
       source?.prepTimeMinutes || source?.prepTimeMinutes === 0
         ? String(source.prepTimeMinutes)
@@ -63,16 +68,43 @@ export default function RecipeFormModal({
   const createMutation = useCreateRecipeMutation();
   const updateMutation = useUpdateRecipeMutation();
   const submitDraftMutation = useSubmitRecipeDraftMutation();
+  const { data: categoriesData } = useRecipeCategoriesQuery();
+
+  const categoryOptions = [
+    { value: "", label: "Select category" },
+    ...(categoriesData?.rows ?? []).map((c) => ({ value: c.id, label: c.name })),
+  ];
 
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const canManageRecipes = hasPermission(PERMISSIONS.MANAGE_RECIPES);
   const canSubmitDrafts = hasPermission(PERMISSIONS.SCAN_RECIPE_DRAFTS);
 
-  const [formValues, setFormValues] = useState(
-    () => getInitialValues({ recipe, draft, kitchenOptions })
+  const [formValues, setFormValues] = useState(() =>
+    getInitialValues({ recipe, draft, kitchenOptions })
   );
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [localError, setLocalError] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  async function handleImageFileChange(event) {
+    const file = event.target.files?.[0] ?? null;
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setLocalError("");
+
+    try {
+      const { url } = await uploadRecipePhotoFile({ file });
+      setFormValues((previous) => ({
+        ...previous,
+        imageUrl: url,
+      }));
+    } catch (err) {
+      setLocalError(err?.message || "Failed to upload image.");
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
 
   const activeMutation = recipe
     ? updateMutation
@@ -128,10 +160,17 @@ export default function RecipeFormModal({
       return;
     }
 
+    const selectedCategory = (categoriesData?.rows ?? []).find(
+      (c) => c.id === formValues.categoryId
+    );
+
     const payload = {
       title: formValues.title.trim(),
       section: formValues.section.trim(),
-      category: formValues.category.trim() || "General",
+      categoryId: formValues.categoryId || null,
+      category: selectedCategory?.name ?? formValues.category.trim() ?? "General",
+      imageUrl: formValues.imageUrl.trim() || null,
+      scalingMultiplier: Number(formValues.scalingMultiplier) || 1,
       prepTimeMinutes: formValues.prepTimeMinutes.trim()
         ? Number(formValues.prepTimeMinutes)
         : null,
@@ -227,11 +266,11 @@ export default function RecipeFormModal({
             <label className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
               Category
             </label>
-            <Input
-              name="category"
-              value={formValues.category}
+            <Select
+              name="categoryId"
+              value={formValues.categoryId}
               onChange={handleChange}
-              placeholder="Sauce"
+              options={categoryOptions}
             />
           </div>
 
@@ -258,6 +297,56 @@ export default function RecipeFormModal({
               value={formValues.yield}
               onChange={handleChange}
               placeholder="1 batch"
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
+              Cover Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageFileChange}
+              disabled={isUploadingImage}
+              className="block w-full rounded-[16px] border border-[var(--stroke-soft)] bg-white px-3 py-3 text-sm text-[var(--text-primary)] file:mr-3 file:rounded-[12px] file:border-0 file:bg-[var(--surface-soft)] file:px-3 file:py-2 file:text-sm file:font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            />
+            {isUploadingImage ? (
+              <p className="mt-2 text-xs text-[var(--text-muted)] animate-pulse">Uploading cover image...</p>
+            ) : null}
+            {formValues.imageUrl ? (
+              <div className="mt-3 relative h-32 w-full max-w-[240px] rounded-xl overflow-hidden border border-[var(--stroke-soft)] bg-[var(--surface-soft)]">
+                <img
+                  src={formValues.imageUrl}
+                  alt="Cover preview"
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setFormValues(p => ({ ...p, imageUrl: "" }))}
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs hover:bg-red-700 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-primary)]">
+              Default Scaling
+            </label>
+            <Select
+              name="scalingMultiplier"
+              value={formValues.scalingMultiplier}
+              onChange={handleChange}
+              options={[
+                { value: "1", label: "x1" },
+                { value: "2", label: "x2" },
+                { value: "3", label: "x3" },
+                { value: "5", label: "x5" },
+                { value: "10", label: "x10" },
+              ]}
             />
           </div>
 

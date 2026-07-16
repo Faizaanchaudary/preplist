@@ -1,8 +1,16 @@
+/**
+ * Mock recipe entries.
+ *
+ * Added `categoryId` which references the `recipeCategories` collection.
+ * The `category` text field is kept alongside for now as a denormalized
+ * cache — the dropdown will write both when saving.
+ */
 export const recipes = [
   {
     id: "r-001",
     title: "Mayonnaise",
     section: "Cold Section",
+    categoryId: "rc-004",
     category: "Sauce",
     prepTimeMinutes: 10,
     yield: "1 batch",
@@ -28,7 +36,8 @@ export const recipes = [
     id: "r-002",
     title: "Tomato Sauce Base",
     section: "Sauce",
-    category: "Base Prep",
+    categoryId: "rc-004",
+    category: "Sauce",
     prepTimeMinutes: 35,
     yield: "4 liters",
     kitchenIds: ["k-001"],
@@ -54,6 +63,7 @@ export const recipes = [
     id: "r-003",
     title: "Banquet Vegetable Prep Guide",
     section: "Prep",
+    categoryId: "rc-008",
     category: "Vegetable Prep",
     prepTimeMinutes: 25,
     yield: "3 hotel pans",

@@ -186,11 +186,7 @@ const routeConfig = [
       },
       {
         path: ROUTE_SEGMENTS.SUBSCRIPTION,
-        element: (
-          <RequirePermission permission={PERMISSIONS.VIEW_SUBSCRIPTION}>
-            <SubscriptionPage />
-          </RequirePermission>
-        ),
+        element: <Navigate to={ROUTES.DASHBOARD} replace />,
       },
     ],
   },
