@@ -166,6 +166,65 @@ export function buildDashboardPayload(db, currentUser) {
   };
 }
 
+const USAGE_WINDOW_DAYS = 14;
+
+// Aggregate-only view for super_admin: numbers and percentages, never a raw
+// list/checklist/recipe/log row. Reads db.* directly (like
+// buildOrganizationStats does) rather than going through getVisibleLists /
+// getVisibleChecklistItems / getVisibleActivityLogs, since those now return
+// nothing for super_admin by design (see hasRawContentBypass in
+// core/visibility.js) — this function IS the trusted aggregation boundary.
+export function buildRestaurantUsagePayload(db, currentUser) {
+  const visibleKitchens = getVisibleKitchens(db, currentUser);
+  const companiesById = new Map(db.companies.map((company) => [company.id, company]));
+
+  const windowStart = new Date();
+  windowStart.setDate(windowStart.getDate() - USAGE_WINDOW_DAYS);
+
+  const rows = visibleKitchens
+    .map((kitchen) => {
+      const kitchenLists = db.lists.filter((list) => list.kitchenId === kitchen.id);
+      const kitchenItems = db.checklistItems.filter((item) => item.kitchenId === kitchen.id);
+      const kitchenLogs = db.activityLogs.filter((log) => log.kitchenId === kitchen.id);
+
+      const totalItems = kitchenItems.length;
+      const completedItems = kitchenItems.filter(
+        (item) => item.status === TASK_STATUSES.COMPLETED
+      ).length;
+      const completionPercentage = totalItems
+        ? Math.round((completedItems / totalItems) * 100)
+        : 0;
+
+      const activeDays = new Set(
+        kitchenLogs
+          .filter((log) => new Date(log.createdAt) >= windowStart)
+          .map((log) => new Date(log.createdAt).toDateString())
+      ).size;
+      const usagePercentage = Math.round((activeDays / USAGE_WINDOW_DAYS) * 100);
+
+      const lastActiveAt = kitchenLogs.reduce((latest, log) => {
+        if (!log.createdAt) return latest;
+        return !latest || new Date(log.createdAt) > new Date(latest) ? log.createdAt : latest;
+      }, null);
+
+      return {
+        kitchenId: kitchen.id,
+        kitchenName: kitchen.name,
+        companyName: companiesById.get(kitchen.companyId)?.name ?? "—",
+        memberCount: db.kitchenMemberships.filter(
+          (membership) => membership.kitchenId === kitchen.id
+        ).length,
+        activeListCount: kitchenLists.filter((list) => list.isActive).length,
+        completionPercentage,
+        usagePercentage,
+        lastActiveAt,
+      };
+    })
+    .sort((a, b) => a.kitchenName.localeCompare(b.kitchenName));
+
+  return { rows };
+}
+
 export function buildKitchenManagementPayload(db, currentUser) {
   const visibleKitchens = getVisibleKitchens(db, currentUser);
 

@@ -41,6 +41,9 @@ export default function AdminPage() {
   const canViewActivityLogs = useAuthStore((state) =>
     state.hasPermission(PERMISSIONS.VIEW_ACTIVITY_LOGS)
   );
+  const canViewRestaurantUsage = useAuthStore((state) =>
+    state.hasPermission(PERMISSIONS.VIEW_KITCHEN_USAGE_ANALYTICS)
+  );
   const canViewUsers =
     canManageUsers ||
     canManageCompanyUsers ||
@@ -56,7 +59,8 @@ export default function AdminPage() {
     canViewKitchenManagement ||
     canViewActivity ||
     canViewOrganization ||
-    canViewSubscription;
+    canViewSubscription ||
+    canViewRestaurantUsage;
 
   return (
     <FeaturePageShell
@@ -130,6 +134,20 @@ export default function AdminPage() {
               <div className="mt-4">
                 <Link to={ROUTES.ACTIVITY_LOGS}>
                   <Button variant="secondary">Open activity</Button>
+                </Link>
+              </div>
+            </Card>
+          ) : null}
+
+          {canViewRestaurantUsage ? (
+            <Card className="p-5">
+              <h3 className="text-lg font-semibold">Restaurant Usage</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                Aggregate adoption percentage per restaurant — no prep list or recipe content.
+              </p>
+              <div className="mt-4">
+                <Link to={ROUTES.ADMIN_RESTAURANT_USAGE}>
+                  <Button variant="secondary">Open restaurant usage</Button>
                 </Link>
               </div>
             </Card>

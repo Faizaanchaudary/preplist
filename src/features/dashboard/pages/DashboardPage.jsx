@@ -45,8 +45,8 @@ export default function DashboardPage() {
     );
   }
 
-  const stats = Array.isArray(data.stats) ? data.stats : [];
   const currentUser = data.currentUser ?? null;
+  const stats = Array.isArray(data.stats) ? data.stats : [];
   const accessibleKitchenIds = Array.isArray(currentUser?.accessibleKitchenIds)
     ? currentUser.accessibleKitchenIds
     : [];
@@ -90,6 +90,11 @@ export default function DashboardPage() {
     ROLES.EXECUTIVE_CHEF,
   ].includes(currentUser?.role);
 
+  // super_admin never sees the raw activity feed (it names actual recipes
+  // and prep-list tasks) — hide the section entirely rather than show it
+  // empty.
+  const isSuperAdmin = currentUser?.role === ROLES.SUPER_ADMIN;
+
   // Keep displayedStats to just the original stats array so it stays exactly 4 cards
   const displayedStats = [...stats];
 
@@ -111,7 +116,11 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+      <div
+        className={
+          isSuperAdmin ? "grid gap-5" : "grid gap-5 xl:grid-cols-[1.1fr_0.9fr]"
+        }
+      >
         <Card className="p-5 sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -194,45 +203,47 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-[var(--text-primary)]">
-                Recent activity
-              </h3>
-              <p className="mt-1 text-sm text-[var(--text-muted)]">
-                Latest actions across visible kitchens and lists.
-              </p>
-            </div>
-            <Badge variant="success">{recentActivity.length} events</Badge>
-          </div>
-
-          <div className="mt-5">
-            {recentActivity.length ? (
-              <div className="space-y-3">
-                {recentActivity.map((log) => (
-                  <div
-                    key={log.id}
-                    className="rounded-[20px] border border-[var(--stroke-soft)] bg-[var(--surface-soft)] p-4"
-                  >
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
-                      {log.message}
-                    </p>
-                    <p className="mt-1 text-xs text-[var(--text-muted)]">
-                      {formatDate(log.createdAt)} · {formatTime(log.createdAt)}
-                    </p>
-                  </div>
-                ))}
+        {isSuperAdmin ? null : (
+          <Card className="p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                  Recent activity
+                </h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
+                  Latest actions across visible kitchens and lists.
+                </p>
               </div>
-            ) : (
-              <EmptyState
-                className="p-0 shadow-none border-0 bg-transparent"
-                title="No recent activity"
-                description="Activity will appear here when users create, join, or complete tasks."
-              />
-            )}
-          </div>
-        </Card>
+              <Badge variant="success">{recentActivity.length} events</Badge>
+            </div>
+
+            <div className="mt-5">
+              {recentActivity.length ? (
+                <div className="space-y-3">
+                  {recentActivity.map((log) => (
+                    <div
+                      key={log.id}
+                      className="rounded-[20px] border border-[var(--stroke-soft)] bg-[var(--surface-soft)] p-4"
+                    >
+                      <p className="text-sm font-medium text-[var(--text-primary)]">
+                        {log.message}
+                      </p>
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">
+                        {formatDate(log.createdAt)} · {formatTime(log.createdAt)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  className="p-0 shadow-none border-0 bg-transparent"
+                  title="No recent activity"
+                  description="Activity will appear here when users create, join, or complete tasks."
+                />
+              )}
+            </div>
+          </Card>
+        )}
       </div>
 
       <Card className="p-5 sm:p-6">

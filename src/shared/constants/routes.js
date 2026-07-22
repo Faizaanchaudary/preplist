@@ -13,6 +13,7 @@ export const ROUTE_SEGMENTS = {
   RECIPE_BOOK: "recipes",
   ACTIVITY_LOGS: "activity-logs",
   ADMIN: "admin",
+  RESTAURANT_USAGE: "restaurant-usage",
   SUBSCRIPTION: "subscription",
 };
 
@@ -33,5 +34,6 @@ export const ROUTES = {
   ACTIVITY_LOGS: "/activity-logs",
   ADMIN: "/admin",
   ADMIN_ROLES: "/admin/roles",
+  ADMIN_RESTAURANT_USAGE: "/admin/restaurant-usage",
   SUBSCRIPTION: "/subscription",
 };

@@ -1,5 +1,5 @@
 export { getCurrentSession, login, logout, pinLogin, selectKitchen, joinByCode, requestPasswordReset } from "./auth.repository.js";
-export { getDashboardData } from "./dashboard.repository.js";
+export { getDashboardData, getRestaurantUsageOverview } from "./dashboard.repository.js";
 export {
   getKitchens,
   getKitchenDetails,

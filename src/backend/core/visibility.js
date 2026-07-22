@@ -1,5 +1,16 @@
 import { PERMISSIONS } from "../../shared/constants/permissions.js";
+import { ROLES } from "../../shared/constants/roles.js";
 import { getUserPermissions } from "../../shared/utils/rbac.js";
+
+// super_admin keeps VIEW_ALL_KITCHENS for kitchen *metadata* listing (see
+// getVisibleKitchens) but must never receive raw list/checklist/recipe/log
+// content — restaurants keep operational privacy. Aggregate usage numbers
+// for super_admin are computed separately in buildRestaurantUsagePayload.
+function hasRawContentBypass(user, permissions) {
+  return (
+    permissions.includes(PERMISSIONS.VIEW_ALL_KITCHENS) && user.role !== ROLES.SUPER_ADMIN
+  );
+}
 
 export function getVisibleKitchens(db, user) {
   if (!user) return [];
@@ -22,6 +33,11 @@ export function getVisibleLists(db, user) {
 
   const permissions = getUserPermissions(user);
 
+  // NOT gated by hasRawContentBypass: getVisibleLists/getVisibleChecklistItems
+  // also back buildDashboardPayload's aggregate math (completionPercentage,
+  // activeListCount) for every role including super_admin — those numbers
+  // are safe (counts only). The actual raw-content leak is guarded directly
+  // at getPrepLists/getListDetails (list.repository.js) instead.
   if (permissions.includes(PERMISSIONS.VIEW_ALL_KITCHENS)) {
     return db.lists;
   }
@@ -50,7 +66,7 @@ export function getVisibleActivityLogs(db, user) {
 
   const permissions = getUserPermissions(user);
 
-  if (permissions.includes(PERMISSIONS.VIEW_ALL_KITCHENS)) {
+  if (hasRawContentBypass(user, permissions)) {
     return db.activityLogs;
   }
 
@@ -87,7 +103,7 @@ export function getVisibleSnapshots(db, user) {
 
   const permissions = getUserPermissions(user);
 
-  if (permissions.includes(PERMISSIONS.VIEW_ALL_KITCHENS)) {
+  if (hasRawContentBypass(user, permissions)) {
     return db.listSnapshots;
   }
 
@@ -111,7 +127,7 @@ export function getVisibleRecipes(db, user) {
 
   const permissions = getUserPermissions(user);
 
-  if (permissions.includes(PERMISSIONS.VIEW_ALL_KITCHENS)) {
+  if (hasRawContentBypass(user, permissions)) {
     return db.recipes;
   }
 

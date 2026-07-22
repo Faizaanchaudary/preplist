@@ -1,9 +1,19 @@
 import { PERMISSIONS } from "../../shared/constants/permissions";
+import { ROLES } from "../../shared/constants/roles";
 import { TASK_STATUSES, TASK_STATUS_LABELS } from "../../shared/constants/taskStatuses";
 import { generateAccessCode } from "../../shared/utils/generateAccessCode";
 import { generateSequentialId } from "../../shared/utils/generateSequentialId";
 import { buildListDetailsPayload, buildListMonitoringPayload, buildTemplatesPayload } from "../mappers/index.js";
 import { createAppError, getVisibleKitchens, getVisibleLists, readDb, requireAuth, requirePermission, touchUser, withDbUpdate } from "./_repoContext.js";
+
+// super_admin never sees raw prep-list content — restaurants keep
+// operational privacy. Aggregate numbers for super_admin come from
+// buildRestaurantUsagePayload / buildDashboardPayload instead, not this.
+function blockSuperAdminContentAccess(user) {
+  if (user.role === ROLES.SUPER_ADMIN) {
+    throw createAppError(403, "Super admin does not have access to prep list content.");
+  }
+}
 
 function appendActivityLog(db, { list, actor, action, message }) {
   db.activityLogs.unshift({
@@ -20,6 +30,7 @@ function appendActivityLog(db, { list, actor, action, message }) {
 export async function getPrepLists(filters = {}) {
   const db = await readDb();
   const currentUser = requireAuth(db);
+  blockSuperAdminContentAccess(currentUser);
 
   const section = typeof filters?.section === "string" ? filters.section : "all";
 
@@ -29,6 +40,7 @@ export async function getPrepLists(filters = {}) {
 export async function getListDetails(listId) {
   const db = await readDb();
   const currentUser = requireAuth(db);
+  blockSuperAdminContentAccess(currentUser);
 
   const normalizedListId = String(listId ?? "").trim();
   const payload = buildListDetailsPayload(db, currentUser, normalizedListId);

@@ -28,6 +28,9 @@ async function loadRepositories() {
     ).requestPasswordReset,
     getDashboardData: (await import("../mocks/repositories/dashboard.repository.js"))
       .getDashboardData,
+    getRestaurantUsageOverview: (
+      await import("../mocks/repositories/dashboard.repository.js")
+    ).getRestaurantUsageOverview,
     getKitchens: (await import("../mocks/repositories/kitchen.repository.js"))
       .getKitchens,
     getKitchenDetails: (await import("../mocks/repositories/kitchen.repository.js"))
@@ -164,6 +167,10 @@ export async function requestPasswordReset(...args) {
 
 export async function getDashboardData(...args) {
   return (await getRepo()).getDashboardData(...args);
+}
+
+export async function getRestaurantUsageOverview(...args) {
+  return (await getRepo()).getRestaurantUsageOverview(...args);
 }
 
 export async function getKitchens(...args) {

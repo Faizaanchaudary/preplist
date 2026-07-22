@@ -21,6 +21,7 @@ import {
   ListMonitoringPage,
   OrganizationPage,
   RolesPage,
+  RestaurantUsagePage,
   SubscriptionPage,
   TemplatesPage,
   UsersPage,
@@ -169,6 +170,14 @@ const routeConfig = [
         element: (
           <RequirePermission permission={PERMISSIONS.VIEW_ADMIN_MONITORING}>
             <RolesPage />
+          </RequirePermission>
+        ),
+      },
+      {
+        path: `${ROUTE_SEGMENTS.ADMIN}/${ROUTE_SEGMENTS.RESTAURANT_USAGE}`,
+        element: (
+          <RequirePermission permission={PERMISSIONS.VIEW_KITCHEN_USAGE_ANALYTICS}>
+            <RestaurantUsagePage />
           </RequirePermission>
         ),
       },

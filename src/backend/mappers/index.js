@@ -1,6 +1,7 @@
 export {
   buildStaffVisibilityRows,
   buildDashboardPayload,
+  buildRestaurantUsagePayload,
   buildKitchenManagementPayload,
   buildKitchenDetailsPayload,
   buildListMonitoringPayload,

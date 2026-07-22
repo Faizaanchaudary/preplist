@@ -40,6 +40,10 @@ export const RolesPage = lazy(() =>
   import("../../features/admin/pages/RolesPage")
 );
 
+export const RestaurantUsagePage = lazy(() =>
+  import("../../features/admin/pages/RestaurantUsagePage")
+);
+
 export const SubscriptionPage = lazy(() =>
   import("../../features/subscription/pages/SubscriptionPage")
 );
